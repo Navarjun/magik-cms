@@ -10,6 +10,10 @@ mongoose.connection
 mongoose.connection
     .on('open', function () {
         // we're connected
+        role.initialSetup()
+            .then(function (role) {
+                user.initialSetup(role);
+            });
     });
 
 module.exports = {
