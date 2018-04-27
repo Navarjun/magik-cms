@@ -2,6 +2,8 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var config = require('./magik.config');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
@@ -22,6 +24,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+// Use sessions with management interface
+app.use(session({
+    secret: config.session.secret,
+    resave: false,
+    saveUninitialized: false
+}));
 app.use('/admin', managementRouter);
 
 // catch 404 and forward to error handler
