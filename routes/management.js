@@ -5,7 +5,7 @@ const Model = require('../magikDB/MagikDB');
 const MagikError = require('../helpers/MagikError');
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
     var welcome = { title: 'Management console of ' + packageConfig.name };
     if (req.session.user) {
         welcome = { title: '(li) Management console of ' + packageConfig.name };
@@ -13,7 +13,7 @@ router.get('/', function (req, res, next) {
     res.render('management/index', welcome);
 });
 
-router.post('/login', function (req, res, next) {
+router.post('/login', function (req, res) {
     try {
         if (!req.body.password) {
             throw new MagikError(412, 'no password found');
