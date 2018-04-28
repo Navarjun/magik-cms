@@ -1,0 +1,15 @@
+body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+    color: #00B7FF;
+}
+
+label.login-page {
+    display: block;
+}
+input.login-page {
+    margin-left: 10px;
+}

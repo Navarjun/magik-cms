@@ -27,7 +27,7 @@ app.use('/users', usersRouter);
 
 // Use sessions with management interface
 app.use(session({
-    secret: config.session.secret,
+    secret: config.encryption.sessionSecret,
     resave: false,
     saveUninitialized: false
 }));

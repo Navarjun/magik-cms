@@ -2,4 +2,11 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  p
+    form(name="login", action='')
+      label.login-page(for="username") Username
+        input.login-page(type="text", name="username")
+      label.login-page(for="password") Password
+        input.login-page(type="password", name="password")
+      input(type="submit")
+  script(src="http://localhost:9000/management/login.bundle.js")

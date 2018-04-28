@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = require('mongoose').Schema;
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const passwordSalt = bcrypt.genSaltSync(require('../magik.config').encryption.passwordSaltRounds);
+const MagikError = require('../helpers/MagikError');
 
 const userSchema = new Schema({
     name: String,
@@ -20,7 +21,7 @@ User.initialSetup = function (superAdmin) {
         User.find().count().exec()
             .then(function (count) {
                 if (count === 0) {
-                    bcrypt.hash('admin', saltRounds)
+                    bcrypt.hash('admin', passwordSalt)
                         .then(function (hash) {
                             const user = new User({
                                 name: 'admin',
@@ -55,7 +56,7 @@ User.addUser = function (name, username, email, password) {
                 if (user) {
                     resolve({ message: 'User already exists' });
                 } else {
-                    bcrypt.hash(password, saltRounds)
+                    bcrypt.hash(password, passwordSalt)
                         .then(function (hash) {
                             const user = new User({
                                 name: name,
@@ -82,9 +83,94 @@ User.addUser = function (name, username, email, password) {
     });
 };
 
+User.loginWithUsername = function (username, password) {
+    return new Promise(function (resolve, reject) {
+        helpers.getPasswordWithUsername(username)
+            .then(function (hash) {
+                if (!hash) {
+                    throw new MagikError(404, 'Username not found');
+                }
+                bcrypt.compare(password, hash)
+                    .then(function (res) {
+                        if (res) {
+                            helpers.findWithUsername(username)
+                                .then(function (user) {
+                                    if (!user) {
+                                        throw new MagikError(404, 'Username not found');
+                                    }
+                                    resolve(user);
+                                });
+                        } else {
+                            throw new MagikError(401, 'Invalid password');
+                        }
+                    }).catch(function (err) {
+                        reject(err);
+                    });
+            }).catch(function (err) {
+                reject(err);
+            });
+    });
+};
+
+User.loginWithEmail = function (email, password) {
+    return new Promise(function (resolve, reject) {
+        helpers.getPasswordWithEmail(email)
+            .then(function (hash) {
+                if (!hash) {
+                    throw new MagikError(404, 'Email not found');
+                }
+                bcrypt.compare(password, hash)
+                    .then(function (res) {
+                        if (res) {
+                            helpers.findWithEmail(email)
+                                .then(function (user) {
+                                    if (!user) {
+                                        throw new MagikError(404, 'Email not found');
+                                    }
+                                    resolve(user);
+                                });
+                        } else {
+                            throw new MagikError(401, 'Invalid password');
+                        }
+                    }).catch(function (err) {
+                        reject(err);
+                    });
+            }).catch(function (err) {
+                reject(err);
+            });
+    });
+};
+
 const helpers = {
-    findWithEmail: function (email) {
-        return User.findOne({ email: email }).select('name username email').exec();
+    findWithEmail: function (email, select = 'name username email') {
+        return User.findOne({ email: email })
+            .select(select)
+            .exec();
+    },
+    findWithUsername: function (username, select = 'name username email') {
+        return User.findOne({ username: username })
+            .select(select)
+            .exec();
+    },
+    getPasswordWithUsername: function (username) {
+        return new Promise(function (resolve, reject) {
+            helpers.findWithUsername(username, 'password')
+                .then(function (user) {
+                    resolve(user.password);
+                }).catch(function (err) {
+                    reject(new MagikError(500, err.message));
+                });
+        });
+    },
+    getPasswordWithEmail: function (email) {
+        return new Promise(function (resolve, reject) {
+            helpers.findWithEmail(email, 'password')
+                .then(function (user) {
+                    resolve(user.password);
+                }).catch(function (err) {
+                    reject(new MagikError(500, err.message));
+                });
+        });
     }
 };
 
