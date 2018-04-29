@@ -5,12 +5,14 @@ const Model = require('../magikDB/MagikDB');
 const MagikError = require('../helpers/MagikError');
 
 /* GET home page. */
-router.get('/', function (req, res) {
-    var welcome = { title: 'Management console of ' + packageConfig.name };
+router.get('/*', function (req, res) {
     if (req.session.user) {
-        welcome = { title: '(li) Management console of ' + packageConfig.name };
+        res.render('management/console', {
+            title: 'Magik CMS | Console'
+        });
+    } else {
+        res.render('management/index', { title: 'Management console of ' + packageConfig.name });
     }
-    res.render('management/index', welcome);
 });
 
 router.post('/login', function (req, res) {
@@ -33,9 +35,9 @@ router.post('/login', function (req, res) {
         promise.then(function (user) {
             req.session.user = user;
             if (user) {
-                res.status(200).send({ message: 'logged in successfully', user: user });
+                res.status(200).send({ message: 'login successful', user: user });
             } else {
-                res.status(200).send({ message: 'Username/email didn\'t match', user: user });
+                res.status(200).send({ message: 'Username/email didn\'t match' });
             }
         }).catch(function (err) {
             req.session.user = undefined;

@@ -1,0 +1,11 @@
+{
+    "extends": ["standard", "plugin:react/recommended"],
+    "rules": {
+        "indent": ["error", 4],
+        "semi": [1, "always"],
+        "no-unused-vars": [1, "all"],
+        "react/prop-types": [0,"never"],
+        "react/jsx-key": [0, "never"]
+    },
+    "plugins": ["react"]
+}

@@ -6,7 +6,8 @@ const MinifyPlugin = require('babel-minify-webpack-plugin');
 
 module.exports = {
     entry: {
-        'management/login': './src/management/login.js'
+        'management/login': './src/management/login.js',
+        'management/console': './src/management/console.js'
     },
     output: {
         path: path.join(__dirname, '/dist'),

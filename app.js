@@ -9,6 +9,8 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var managementRouter = require('./routes/management');
+var managementAPI = require('./routes/management_api');
+
 var db = require('./magikDB/MagikDB');
 var app = express();
 
@@ -32,6 +34,7 @@ app.use(session({
     saveUninitialized: false
 }));
 app.use('/admin', managementRouter);
+app.use('/admin/api', managementAPI);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
