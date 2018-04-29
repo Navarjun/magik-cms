@@ -33,8 +33,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
-app.use('/admin', managementRouter);
 app.use('/admin/api', managementAPI);
+app.use('/admin', managementRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
