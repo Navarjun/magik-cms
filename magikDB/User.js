@@ -3,6 +3,7 @@ const Schema = require('mongoose').Schema;
 const bcrypt = require('bcrypt');
 const passwordSalt = bcrypt.genSaltSync(require('../magik.config').encryption.passwordSaltRounds);
 const MagikError = require('../helpers/MagikError');
+const Role = require('./Role');
 
 const userSchema = new Schema({
     name: String,
@@ -141,6 +142,81 @@ User.loginWithEmail = function (email, password) {
     });
 };
 
+User.get = function (id, fields = 'name email username roles') {
+    if (Array.isArray(id)) {
+        return new Promise(function (resolve, reject) {
+            User.find({
+                _id: { $in: id.map(d => mongoose.Types.ObjectId(d)) }
+            }).select(fields)
+                .exec()
+                .then(function (users) {
+                    if (!users) {
+                        reject(new MagikError(404, 'User not found'));
+                        return;
+                    }
+                    if (fields.indexOf('roles') !== -1) {
+                        const usersWithRoles = [];
+                        const getRoles = function (user) {
+                            return new Promise(function (resolve, reject) {
+                                if (user.roles && user.roles.length > 0) {
+                                    Role.get(user.roles)
+                                        .then(function (roles) {
+                                            if (roles) {
+                                                user.roles = roles;
+                                            }
+                                            usersWithRoles.push(user);
+                                        })
+                                        .catch(function (err) {
+                                            reject(err);
+                                        });
+                                }
+                            });
+                        };
+                        getRoles(users[0])
+                            .then(function (users) {
+                                if (!users) {
+                                    reject(new MagikError(404, 'Users not found'));
+                                }
+                                resolve(users);
+                            })
+                            .catch(function (err) {
+                                reject(err);
+                            });
+                    }
+                }).catch(function (err) {
+                    reject(err);
+                });
+        });
+    } else {
+        return new Promise(function (resolve, reject) {
+            User.findById(id)
+                .select(fields)
+                .exec()
+                .then(function (user) {
+                    if (!user) {
+                        reject(new MagikError(404, 'User not found'));
+                        return;
+                    }
+                    if (fields.indexOf('roles') !== -1 && user.roles && user.roles.length > 0) {
+                        Role.get(user.roles)
+                            .then(function (roles) {
+                                if (!roles) {
+                                    reject(new MagikError(404));
+                                }
+                                user.roles = roles;
+                                resolve(user);
+                            })
+                            .catch(function (err) {
+                                reject(err);
+                            });
+                    }
+                }).catch(function (err) {
+                    reject(err);
+                });
+        });
+    }
+};
+
 const helpers = {
     findWithEmail: function (email, select = 'name username email') {
         return User.findOne({ email: email })
@@ -171,6 +247,9 @@ const helpers = {
                     reject(new MagikError(500, err.message));
                 });
         });
+    },
+    getRoleWithId: function (roleId) {
+        return Role.get(roleId);
     }
 };
 

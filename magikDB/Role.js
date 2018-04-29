@@ -77,4 +77,17 @@ Role.initialSetup = function () {
     });
 };
 
+Role.get = function (id, fields = 'name acl') {
+    if (Array.isArray(id)) {
+        return Role.find({
+            _id: { $in: id.map(d => mongoose.Types.ObjectId(d)) }
+        }).select(fields)
+            .exec();
+    } else {
+        return Role.findById(id)
+            .select(fields)
+            .exec();
+    }
+};
+
 module.exports = Role;
