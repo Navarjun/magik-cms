@@ -1,8 +1,31 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
+import {Link, NavLink} from 'react-router-dom';
 
 export class Navbar extends React.Component {
+    constructor (props) {
+        super(props);
+        const navOptions = new Set();
+        if (props.isSuperAdmin) {
+            navOptions.add({ link: '/navigation', name: 'Navigation' });
+            navOptions.add({ link: '/blogs', name: 'Blogs' });
+            navOptions.add({ link: '/galleries', name: 'Galleries' });
+            navOptions.add({ link: '/pages', name: 'Static pages' });
+            navOptions.add({ link: '/containers', name: 'Containers' });
+            navOptions.add({ link: '/users', name: 'Users' });
+            navOptions.add({ link: '/roles', name: 'Roles' });
+        }
+        // TODO: handle other kinds of permissions
+        this.state = {
+            navOptions: [...navOptions]
+        };
+    }
+
     render () {
+        const navItems = this.state.navOptions.map(d => {
+            return <li key={d.link}>
+                <NavLink to={d.link} className='nav-link'>{d.name}</NavLink>
+            </li>;
+        });
         return (
             <div className='navbar navbar-expand-lg navbar-dark bg-dark'>
                 <Link className='navbar-brand' to='/'>Magik CMS</Link>
@@ -12,27 +35,7 @@ export class Navbar extends React.Component {
 
                 <div className='collapse navbar-collapse' id='navbarSupportedContent'>
                     <ul className='navbar-nav mr-auto'>
-                        <li>
-                            <Link className='nav-link' to='/navigation'>Site Map</Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link className='nav-link' to='/blogs'>Blogs</Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link className='nav-link' to='/galleries'>Galleries</Link>
-                        </li>
-                        <li className='navItem'>
-                            <Link className='nav-link' to='/pages'>Static pages</Link>
-                        </li>
-                        <li className='navItem'>
-                            <Link className='nav-link' to='/containers'>Containers</Link>
-                        </li>
-                        <li>
-                            <Link className='nav-link' to='/users'>Users</Link>
-                        </li>
-                        <li>
-                            <Link className='nav-link' to='/roles'>Roles</Link>
-                        </li>
+                        {navItems}
                     </ul>
                 </div>
             </div>

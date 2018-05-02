@@ -30,7 +30,7 @@ module.exports = {
             },
             { test: /\.json$/, loader: 'json-loader' },
             { test: /\.css$/, loader: 'style-loader!css-loader', exclude: path.join(__dirname, '/node_modules') },
-            { test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader', exclude: path.join(__dirname, '/node_modules') },
+            { test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader'/*, exclude: path.join(__dirname, '/node_modules') */},
             { test: /\.woff(\d+)?$/, loader: 'url?prefix=font/&limit=5000&mimetype=application/font-woff' },
             { test: /\.ttf$/, loader: 'file?prefix=font/' },
             { test: /\.eot$/, loader: 'file?prefix=font/' },

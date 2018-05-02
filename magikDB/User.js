@@ -10,6 +10,7 @@ const userSchema = new Schema({
     username: String,
     email: String,
     password: String,
+    isSuperAdmin: Boolean,
     roles: [{
         type: Schema.Types.ObjectId,
         ref: 'Role'
@@ -17,7 +18,7 @@ const userSchema = new Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-User.initialSetup = function (superAdmin) {
+User.initialSetup = function () {
     return new Promise(function (resolve, reject) {
         User.find().count().exec()
             .then(function (count) {
@@ -28,8 +29,9 @@ User.initialSetup = function (superAdmin) {
                                 name: 'admin',
                                 username: 'admin',
                                 email: 'admin@magik.com',
+                                isSuperAdmin: true,
                                 password: hash,
-                                roles: [superAdmin._id]
+                                roles: []
                             });
                             user.save(function (err) {
                                 if (err) {
@@ -142,7 +144,7 @@ User.loginWithEmail = function (email, password) {
     });
 };
 
-User.get = function (id, fields = 'name email username roles') {
+User.get = function (id, fields = 'name email username isSuperAdmin roles') {
     if (Array.isArray(id)) {
         return new Promise(function (resolve, reject) {
             User.find({
@@ -191,25 +193,14 @@ User.get = function (id, fields = 'name email username roles') {
         return new Promise(function (resolve, reject) {
             User.findById(id)
                 .select(fields)
+                .populate({ path: 'roles', populate: { path: 'permissions', model: 'Permission' } })
                 .exec()
                 .then(function (user) {
                     if (!user) {
                         reject(new MagikError(404, 'User not found'));
                         return;
                     }
-                    if (fields.indexOf('roles') !== -1 && user.roles && user.roles.length > 0) {
-                        Role.get(user.roles)
-                            .then(function (roles) {
-                                if (!roles) {
-                                    reject(new MagikError(404));
-                                }
-                                user.roles = roles;
-                                resolve(user);
-                            })
-                            .catch(function (err) {
-                                reject(err);
-                            });
-                    }
+                    resolve(user);
                 }).catch(function (err) {
                     reject(err);
                 });
@@ -218,12 +209,12 @@ User.get = function (id, fields = 'name email username roles') {
 };
 
 const helpers = {
-    findWithEmail: function (email, select = 'name username email') {
+    findWithEmail: function (email, select = 'name username email isSuperAdmin') {
         return User.findOne({ email: email })
             .select(select)
             .exec();
     },
-    findWithUsername: function (username, select = 'name username email') {
+    findWithUsername: function (username, select = 'name username email isSuperAdmin') {
         return User.findOne({ username: username })
             .select(select)
             .exec();
