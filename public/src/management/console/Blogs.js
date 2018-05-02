@@ -1,5 +1,6 @@
 import React from 'react';
 import {BlogDetails} from './Blog/BlogDetails';
+import * as $ from 'jquery';
 
 export class Blogs extends React.Component {
     constructor (props) {

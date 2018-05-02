@@ -42,7 +42,6 @@ router.get('/blogs', function (req, res) {
 router.post('/create', function (req, res) {
     const type = req.body.type;
     const object = req.body.object;
-    console.log(req.body);
     switch (type) {
     case 'blog':
     { // TODO: manage ACL
@@ -68,6 +67,33 @@ router.post('/create', function (req, res) {
         res.status(400).send({ message: 'There is no entity ' + type });
     }
 });
+
+router.post('/update', function (req, res) {
+    const type = req.body.type;
+    const object = req.body.object;
+    if (!(object && object._id)) {
+        res.status(400, 'There should be an object with an _id in the request');
+    }
+    switch (type) {
+    case 'blog':
+    { // TODO: manage ACL
+        Model.blog.update(object)
+            .then(function (data) {
+                if (!data) {
+                    res.status(500).send({ message: 'Database Error' });
+                    return;
+                }
+                res.status(200).send({ message: 'success' });
+            }).catch(function (err) {
+                res.status(500).send({ message: err.message });
+            });
+        break;
+    }
+    default:
+        res.status(400).send({ message: 'There is no entity ' + type });
+    }
+});
+
 router.post('/delete', function (req, res) {
     const type = req.body.type;
     const id = req.body.id;

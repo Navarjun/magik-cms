@@ -2,6 +2,7 @@ import React from 'react';
 import Tags from 'react-tagging-input';
 import 'bootstrap';
 import '../../../../node_modules/react-tagging-input/src/component/scss/styles.scss';
+import * as $ from 'jquery';
 
 export class BlogDetails extends React.Component {
     constructor (props) {
@@ -108,11 +109,26 @@ export class BlogDetails extends React.Component {
                 }
             });
         } else {
-            $.post('/admin/api/blog/edit', this.state.blog, function (response) {
-                if (response.message === 'success') {
-                    console.log(response.data);
-                } else {
-                    this.setState({loading: false, buttonsEnabled: true});
+            $.ajax({
+                method: 'POST',
+                url: '/admin/api/update',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify({ type: 'blog', object: this.state.blog }),
+                error: (err) => {
+                    const state = {loading: false, buttonsEnabled: true};
+                    if (err.responseJSON && err.responseJSON.message) {
+                        state.errMessage = err.responseJSON.message;
+                    }
+                    this.setState(state);
+                },
+                success: (response) => {
+                    if (response.message === 'success') {
+                        this.setState({loading: false, buttonsEnabled: true});
+                        window.location.reload();
+                    } else {
+                        this.setState({loading: false, buttonsEnabled: true});
+                    }
                 }
             });
         }
