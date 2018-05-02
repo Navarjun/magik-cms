@@ -53,7 +53,7 @@ export class Blogs extends React.Component {
                         <h1>Blogs</h1>
                     </div>
                     <div className='col-sm-2'>
-                        <button type='button' className='float-right btn btn-sm btn-primary' data-toggle='modal' data-target='#create-blog'>
+                        <button type='button' className='float-right btn btn-sm btn-primary' data-toggle='modal' data-target='#create-blog' onClick={() => this.setState({edittingBlog: undefined})}>
                         Create Blog
                         </button>
                     </div>

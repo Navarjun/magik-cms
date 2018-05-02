@@ -85,21 +85,28 @@ export class BlogDetails extends React.Component {
     submit () {
         this.setState({loading: true, buttonsEnabled: false});
         if (this.state.createNew) {
-            $.post('/admin/api/blog/create', this.state.blog)
-                .done((response) => {
+            $.ajax({
+                method: 'POST',
+                url: '/admin/api/create',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify({ type: 'blog', object: this.state.blog }),
+                error: (err) => {
+                    const state = {loading: false, buttonsEnabled: true};
+                    if (err.responseJSON && err.responseJSON.message) {
+                        state.errMessage = err.responseJSON.message;
+                    }
+                    this.setState(state);
+                },
+                success: (response) => {
                     if (response.message === 'success') {
                         this.setState({loading: false, buttonsEnabled: true});
                         window.location.reload();
                     } else {
                         this.setState({loading: false, buttonsEnabled: true});
                     }
-                }).fail((err) => {
-                    const state = {loading: false, buttonsEnabled: true};
-                    if (err.responseJSON && err.responseJSON.message) {
-                        state.errMessage = err.responseJSON.message;
-                    }
-                    this.setState(state);
-                });
+                }
+            });
         } else {
             $.post('/admin/api/blog/edit', this.state.blog, function (response) {
                 if (response.message === 'success') {

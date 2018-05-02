@@ -39,25 +39,33 @@ router.get('/blogs', function (req, res) {
         });
 });
 
-router.post('/blog/create', function (req, res) {
-    const blog = req.body;
-    if (blog.title && blog.title !== '' &&
-        blog.uri && /^\w+$/i.test(blog.uri)) {
+router.post('/create', function (req, res) {
+    const type = req.body.type;
+    const object = req.body.object;
+    console.log(req.body);
+    switch (type) {
+    case 'blog':
+    { // TODO: manage ACL
+        if (object.title && object.title !== '' &&
+        object.uri && /^\w+$/i.test(object.uri)) {
         // TODO: manage ACL
-        Model.blog.create(blog)
-            .then(function (x) {
-                console.log('x', x);
-                blog._id = x._id;
-                res.status(200).send({ message: 'success', data: {blog: x} });
-            })
-            .catch(function (err) {
-                if (err && err.toJSON && err.toJSON() && err.toJSON().code && err.toJSON().code === 11000) {
-                    res.status(409).send({ message: 'Title and uri of the blog you are trying to create must be unique' });
-                }
-                res.status(500).send({ message: 'Database Error' });
-            });
-    } else {
-        res.status(412).send({ message: 'Request must have blog title and uri' });
+            Model.blog.create(object)
+                .then(function (x) {
+                    res.status(200).send({ message: 'success', data: {blog: x} });
+                })
+                .catch(function (err) {
+                    if (err && err.toJSON && err.toJSON() && err.toJSON().code && err.toJSON().code === 11000) {
+                        res.status(409).send({ message: 'Title and uri of the blog you are trying to create must be unique' });
+                    }
+                    res.status(500).send({ message: 'Database Error' });
+                });
+        } else {
+            res.status(412).send({ message: 'Request must have blog title and uri' });
+        }
+        break;
+    }
+    default:
+        res.status(400).send({ message: 'There is no entity ' + type });
     }
 });
 router.post('/delete', function (req, res) {
@@ -65,7 +73,7 @@ router.post('/delete', function (req, res) {
     const id = req.body.id;
     switch (type) {
     case 'blog':
-        // TODO: manage ACL
+    { // TODO: manage ACL
         Model.blog.delete(id)
             .then(function (data) {
                 if (!data) {
@@ -77,6 +85,7 @@ router.post('/delete', function (req, res) {
                 res.status(500).send({ message: err.message });
             });
         break;
+    }
     default:
         res.status(400).send({ message: 'There is no entity ' + type });
     }
