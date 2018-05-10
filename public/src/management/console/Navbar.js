@@ -11,8 +11,15 @@ export class Navbar extends React.Component {
             navOptions.add({ link: '/pages', name: 'Static pages' });
             navOptions.add({ link: '/containers', name: 'Containers' });
             navOptions.add({ link: '/users', name: 'Users' });
+        } else {
+            navOptions.add({ link: '/navigation', name: 'Navigation' });
+            navOptions.add({ link: '/blogs', name: 'Blogs' });
+            navOptions.add({ link: '/pages', name: 'Static pages' });
+            navOptions.add({ link: '/containers', name: 'Containers' });
+            if (props.canAccessUsers) {
+                navOptions.add({ link: '/users', name: 'Users' });
+            }
         }
-        // TODO: handle other kinds of permissions
         this.state = {
             navOptions: [...navOptions]
         };

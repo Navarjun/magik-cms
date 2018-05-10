@@ -191,9 +191,9 @@ router.post('/:type', function (req, res) {
 });
 
 // INSERT NEW ITEMS
-router.put('/:type', function (req, res) {
-    const type = req.body.type;
-    const object = req.body.object;
+router.put('/:type', function (req, res, next) {
+    const type = req.params.type;
+    const object = req.body;
 
     switch (type) {
     case 'blog':
@@ -201,19 +201,16 @@ router.put('/:type', function (req, res) {
             object.uri = slugify(object.title, {lowercase: true});
             Model.blog.create(object)
                 .then(function (x) {
-                    Model.user.update({_id: req.session.user._id, canAccessBlogs: req.session.user.canAccessBlogs.push(x._id)})
-                        .then(function () {
+                    Model.user.update({_id: req.session.user._id, canAccessBlogs: req.session.user.canAccessBlogs.concat([x._id])})
+                        .then(function (user) {
+                            req.session.user = user;
                             res.status(200).send({ message: 'success', data: {blog: x} });
-                        }).catch(function () {
-                            res.status(500).send({ message: 'Error adding user to the blog, please ask admin' });
+                        }).catch(function (err) {
+                            res.status(err.code || 500).send({message: err.message || 'Server error'});
                         });
                 })
                 .catch(function (err) {
-                    if (err && err.toJSON && err.toJSON() && err.toJSON().code && err.toJSON().code === 11000) {
-                        res.status(409).send({ message: 'Title and uri of the blog you are trying to create must be unique' });
-                        return;
-                    }
-                    res.status(500).send({ message: 'Database Error' });
+                    res.status(err.code || 500).send({message: err.message || 'Server error'});
                 });
         } else {
             res.status(412).send({ message: 'Request must have blog title and uri' });
@@ -280,6 +277,8 @@ router.put('/:type', function (req, res) {
     default:
         res.status(400).send({ message: 'There is no entity ' + type });
     }
+
+    next();
 });
 
 // delete things

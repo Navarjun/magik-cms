@@ -87,11 +87,11 @@ export class BlogDetails extends React.Component {
         this.setState({loading: true, buttonsEnabled: false});
         if (this.state.createNew) {
             $.ajax({
-                method: 'POST',
-                url: '/admin/api/create',
+                method: 'PUT',
+                url: '/admin/api/blog',
                 contentType: 'application/json',
                 dataType: 'json',
-                data: JSON.stringify({ type: 'blog', object: this.state.blog }),
+                data: JSON.stringify(this.state.blog),
                 error: (err) => {
                     const state = {loading: false, buttonsEnabled: true};
                     if (err.responseJSON && err.responseJSON.message) {

@@ -9,14 +9,15 @@ const userSchema = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    isSuperAdmin: { type: Boolean, default: false },
-    canAccessUsers: { type: Boolean, default: false },
+    isSuperAdmin: { type: Boolean, default: false, required: true },
+    canAccessUsers: { type: Boolean, default: false, required: true },
     canAccessBlogs: {
         type: [{
             type: Schema.Types.ObjectId,
             ref: 'blogs'
         }],
-        default: []
+        default: [],
+        required: true
     }
 }, {timestamps: true});
 const User = mongoose.model('User', userSchema);
@@ -33,8 +34,7 @@ User.initialSetup = function () {
                                 username: 'admin',
                                 email: 'admin@magik.com',
                                 isSuperAdmin: true,
-                                password: hash,
-                                roles: []
+                                password: hash
                             });
                             user.save(function (err) {
                                 if (err) {
@@ -166,12 +166,12 @@ User.delete = function (id) {
 };
 
 const helpers = {
-    findWithEmail: function (email, select = 'name username email isSuperAdmin') {
+    findWithEmail: function (email, select = 'name email username isSuperAdmin canAccessUsers canAccessBlogs') {
         return User.findOne({ email: email })
             .select(select)
             .exec();
     },
-    findWithUsername: function (username, select = 'name username email isSuperAdmin') {
+    findWithUsername: function (username, select = 'name email username isSuperAdmin canAccessUsers canAccessBlogs') {
         return User.findOne({ username: username })
             .select(select)
             .exec();

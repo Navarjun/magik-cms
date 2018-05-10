@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {BlogDetails} from './Blog/BlogDetails';
 import * as $ from 'jquery';
 
@@ -30,22 +31,31 @@ export class Blogs extends React.Component {
         if (this.state.loading) {
             return (<div className='row'><div className='loader'/></div>);
         }
+        console.log(this.props);
         const blogList = this.state.blogs.length === 0
             ? <h2>There are no blogs yet</h2>
             : <ul className='list-group'>
-                {this.state.blogs.map((blog, i) => {
-                    return <li className='list-group-item' key={i}>
-                        <span className='float-left'>
-                            {blog.title}
-                        </span>
-                        <span className='float-right'>
-                            <div className="btn-group" role="group" aria-label="...">
-                                <button type="button" className="btn btn-sm btn-warning" data-toggle='modal' data-target='#create-blog' onClick={this.editBlog.bind(this, blog._id)}>Edit</button>
-                                <button type="button" className="btn btn-sm btn-danger" onClick={this.deleteBlog.bind(this, blog._id)}>Delete</button>
-                            </div>
-                        </span>
-                    </li>;
-                })}
+                {
+                    this.state.blogs.map((blog, i) => {
+                        return <li className='list-group-item' key={i}>
+                            <span className='float-left'>
+                                {
+                                    this.props.canAccessBlogs.indexOf(blog._id) !== -1 ? <Link to={'/blog/' + blog._id}>{blog.title}</Link> : blog.title
+                                }
+                            </span>
+                            {
+                                this.props.canAccessBlogs.indexOf(blog._id) !== -1
+                                    ? <span className='float-right'>
+                                        <div className="btn-group" role="group" aria-label="...">
+                                            <button type="button" className="btn btn-sm btn-warning" data-toggle='modal' data-target='#create-blog' onClick={this.editBlog.bind(this, blog._id)}>Edit</button>
+                                            <button type="button" className="btn btn-sm btn-danger" onClick={this.deleteBlog.bind(this, blog._id)}>Delete</button>
+                                        </div>
+                                    </span>
+                                    : null
+                            }
+                        </li>;
+                    })
+                }
             </ul>;
         var list = <div className='row'>
             <div className='col-sm-12 section-header'>
