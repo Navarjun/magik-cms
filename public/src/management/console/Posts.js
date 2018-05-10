@@ -2,14 +2,14 @@ import React from 'react';
 import {BlogDetails} from './Blog/BlogDetails';
 import * as $ from 'jquery';
 
-export class Blogs extends React.Component {
+export class Posts extends React.Component {
     constructor (props) {
         super(props);
         this.state = {loading: true, blogs: [], edittingBlog: undefined};
         this.editBlog = this.editBlog.bind(this);
     }
     componentDidMount () {
-        $.get('/admin/api/blog', (response) => {
+        $.get('/admin/api/blogs', (response) => {
             console.log(response);
             this.setState({loading: false, blogs: response.data});
         });

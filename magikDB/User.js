@@ -3,19 +3,22 @@ const Schema = require('mongoose').Schema;
 const bcrypt = require('bcrypt');
 const passwordSalt = bcrypt.genSaltSync(require('../magik.config').encryption.passwordSaltRounds);
 const MagikError = require('../helpers/MagikError');
-const Role = require('./Role');
 
 const userSchema = new Schema({
     name: String,
     username: String,
     email: String,
     password: String,
-    isSuperAdmin: Boolean,
-    roles: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Role'
-    }]
-});
+    isSuperAdmin: { type: Boolean, default: false },
+    canAccessUsers: { type: Boolean, default: false },
+    canAccessBlogs: {
+        type: [{
+            type: Schema.Types.ObjectId,
+            ref: 'blogs'
+        }],
+        default: []
+    }
+}, {timestamps: true});
 const User = mongoose.model('User', userSchema);
 
 User.initialSetup = function () {
@@ -144,7 +147,11 @@ User.loginWithEmail = function (email, password) {
     });
 };
 
-User.get = function (id, fields = 'name email username isSuperAdmin roles') {
+User.getAll = function (fields = 'name email username isSuperAdmin canAccessUsers canAccessBlogs') {
+    return User.find().select(fields).exec();
+};
+
+User.get = function (id, fields = 'name email username isSuperAdmin canAccessUsers canAccessBlogs') {
     if (Array.isArray(id)) {
         return new Promise(function (resolve, reject) {
             User.find({
@@ -156,35 +163,7 @@ User.get = function (id, fields = 'name email username isSuperAdmin roles') {
                         reject(new MagikError(404, 'User not found'));
                         return;
                     }
-                    if (fields.indexOf('roles') !== -1) {
-                        const usersWithRoles = [];
-                        const getRoles = function (user) {
-                            return new Promise(function (resolve, reject) {
-                                if (user.roles && user.roles.length > 0) {
-                                    Role.get(user.roles)
-                                        .then(function (roles) {
-                                            if (roles) {
-                                                user.roles = roles;
-                                            }
-                                            usersWithRoles.push(user);
-                                        })
-                                        .catch(function (err) {
-                                            reject(err);
-                                        });
-                                }
-                            });
-                        };
-                        getRoles(users[0])
-                            .then(function (users) {
-                                if (!users) {
-                                    reject(new MagikError(404, 'Users not found'));
-                                }
-                                resolve(users);
-                            })
-                            .catch(function (err) {
-                                reject(err);
-                            });
-                    }
+                    resolve(users);
                 }).catch(function (err) {
                     reject(err);
                 });
@@ -206,6 +185,21 @@ User.get = function (id, fields = 'name email username isSuperAdmin roles') {
                 });
         });
     }
+};
+
+User.update = function (user) {
+    return new Promise(function (resolve, reject) {
+        User.findByIdAndUpdate(user._id, user)
+            .then(function (user) {
+                if (user) {
+                    resolve(user);
+                } else {
+                    reject(new MagikError(404, 'Post with id requested not found'));
+                }
+            }).catch(function (err) {
+                reject(err);
+            });
+    });
 };
 
 const helpers = {

@@ -8,11 +8,9 @@ export class Navbar extends React.Component {
         if (props.isSuperAdmin) {
             navOptions.add({ link: '/navigation', name: 'Navigation' });
             navOptions.add({ link: '/blogs', name: 'Blogs' });
-            navOptions.add({ link: '/galleries', name: 'Galleries' });
             navOptions.add({ link: '/pages', name: 'Static pages' });
             navOptions.add({ link: '/containers', name: 'Containers' });
             navOptions.add({ link: '/users', name: 'Users' });
-            navOptions.add({ link: '/roles', name: 'Roles' });
         }
         // TODO: handle other kinds of permissions
         this.state = {

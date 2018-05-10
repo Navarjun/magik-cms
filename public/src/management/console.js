@@ -21,7 +21,7 @@ const App = (props) => (
         <Navbar isSuperAdmin={props.isSuperAdmin} roles={props.roles}/>
         <div className='container super-container'>
             <Route exact path="/" component={Home}/>
-            <Route exact path="/navigation" render={() => <Navigation isSuperAdmin={props.isSuperAdmin} roles={props.roles.map(d => d.permissions)}/>}/>
+            <Route exact path="/navigation" render={() => <Navigation isSuperAdmin={props.isSuperAdmin}/>}/>
             <Route exact path="/blogs" render={() => <Blogs/>}/>
         </div>
     </div>
