@@ -22,7 +22,6 @@ Blog.findForUser = function (user, fields = 'title uri published tags descriptio
             .select(fields)
             .exec();
     }
-    // TODO: handle other permissions
 };
 
 Blog.findByUri = function (uri) {
@@ -33,6 +32,7 @@ Blog.findByUri = function (uri) {
 Blog.create = function (blog) {
     return new Blog(blog).save();
 };
+
 Blog.update = function (blog) {
     return new Promise(function (resolve, reject) {
         Blog.findByIdAndUpdate(blog._id, blog)
@@ -47,6 +47,7 @@ Blog.update = function (blog) {
             });
     });
 };
+
 Blog.delete = function (blogId) {
     return Blog.findByIdAndRemove(blogId)
         .exec();

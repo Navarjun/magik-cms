@@ -5,10 +5,10 @@ const passwordSalt = bcrypt.genSaltSync(require('../magik.config').encryption.pa
 const MagikError = require('../helpers/MagikError');
 
 const userSchema = new Schema({
-    name: String,
-    username: String,
-    email: String,
-    password: String,
+    name: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
     isSuperAdmin: { type: Boolean, default: false },
     canAccessUsers: { type: Boolean, default: false },
     canAccessBlogs: {
@@ -57,31 +57,21 @@ User.initialSetup = function () {
 
 User.addUser = function (name, username, email, password) {
     return new Promise(function (resolve, reject) {
-        helpers.findWithEmail(email)
-            .then(function (user) {
-                if (user) {
-                    resolve({ message: 'User already exists' });
-                } else {
-                    bcrypt.hash(password, passwordSalt)
-                        .then(function (hash) {
-                            const user = new User({
-                                name: name,
-                                email: email,
-                                username: username,
-                                password: hash
-                            });
-                            user.save(function (err) {
-                                if (err) {
-                                    reject(err);
-                                    return;
-                                }
-                                resolve(user);
-                            });
-                        })
-                        .catch(function (err) {
-                            reject(err);
-                        });
-                }
+        bcrypt.hash(password, passwordSalt)
+            .then(function (hash) {
+                const user = new User({
+                    name: name,
+                    email: email,
+                    username: username,
+                    password: hash
+                });
+                user.save(function (err) {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(user);
+                });
             })
             .catch(function (err) {
                 reject(err);
@@ -152,39 +142,7 @@ User.getAll = function (fields = 'name email username isSuperAdmin canAccessUser
 };
 
 User.get = function (id, fields = 'name email username isSuperAdmin canAccessUsers canAccessBlogs') {
-    if (Array.isArray(id)) {
-        return new Promise(function (resolve, reject) {
-            User.find({
-                _id: { $in: id.map(d => mongoose.Types.ObjectId(d)) }
-            }).select(fields)
-                .exec()
-                .then(function (users) {
-                    if (!users) {
-                        reject(new MagikError(404, 'User not found'));
-                        return;
-                    }
-                    resolve(users);
-                }).catch(function (err) {
-                    reject(err);
-                });
-        });
-    } else {
-        return new Promise(function (resolve, reject) {
-            User.findById(id)
-                .select(fields)
-                .populate({ path: 'roles', populate: { path: 'permissions', model: 'Permission' } })
-                .exec()
-                .then(function (user) {
-                    if (!user) {
-                        reject(new MagikError(404, 'User not found'));
-                        return;
-                    }
-                    resolve(user);
-                }).catch(function (err) {
-                    reject(err);
-                });
-        });
-    }
+    return User.findOne({_id: id}).select(fields).exec();
 };
 
 User.update = function (user) {
@@ -194,12 +152,17 @@ User.update = function (user) {
                 if (user) {
                     resolve(user);
                 } else {
-                    reject(new MagikError(404, 'Post with id requested not found'));
+                    reject(new MagikError(404, 'User with id requested not found'));
                 }
             }).catch(function (err) {
                 reject(err);
             });
     });
+};
+
+User.delete = function (id) {
+    return User.findByIdAndRemove(id)
+        .exec();
 };
 
 const helpers = {
@@ -232,9 +195,6 @@ const helpers = {
                     reject(new MagikError(500, err.message));
                 });
         });
-    },
-    getRoleWithId: function (roleId) {
-        return Role.get(roleId);
     }
 };
 

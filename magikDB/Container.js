@@ -18,6 +18,10 @@ Model.create = function (object) {
     return new Model(object).save();
 };
 
+Model.get = function () {
+    return Model.find().exec();
+};
+
 Model.update = function (container) {
     return new Promise(function (resolve, reject) {
         Model.findByIdAndUpdate(container._id, container)
@@ -31,6 +35,11 @@ Model.update = function (container) {
                 reject(err);
             });
     });
+};
+
+Model.delete = function (id) {
+    return Model.findByIdAndRemove(id)
+        .exec();
 };
 
 module.exports = Model;

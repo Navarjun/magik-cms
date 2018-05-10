@@ -12,13 +12,22 @@ const postSchema = new Schema({
     publishedDate: Date,
     description: String,
     tags: [String],
-    blog: {
+    blogId: {
         type: Schema.Types.ObjectId,
         ref: 'Blog'
+    },
+    authorId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 }, {timestamps: true});
 
 const Post = mongoose.model('Post', postSchema);
+
+Post.getById = function (id) {
+    return Post.findOne({_id: id}).exec();
+};
 
 Post.findByBlogId = function (blogId, limit = 10, skip = 0) {
     return Post.find({blog: blogId})
@@ -50,13 +59,5 @@ Post.delete = function (postId) {
     return Post.findByIdAndRemove(postId)
         .exec();
 };
-
-Post.verify = function (post) {
-    if (post.title && post.blog) {
-        return true;
-    }
-    return false;
-};
-Post.invalidMessage = 'A post must contain a title and belong to a blog';
 
 module.exports = Post;

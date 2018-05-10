@@ -64,4 +64,9 @@ Model.update = function (navigation) {
     });
 };
 
+Model.delete = function (id) {
+    return Model.findByIdAndRemove(id)
+        .exec();
+};
+
 module.exports = Model;
