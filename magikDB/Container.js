@@ -14,7 +14,7 @@ const schema = new Schema({
 const Model = mongoose.model('Container', schema);
 
 Model.create = function (object) {
-    object.uri = slugify(object.title, {lowercase: true});
+    object.uri = slugify(object.title, {lower: true});
     return new Model(object).save();
 };
 

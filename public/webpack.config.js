@@ -7,7 +7,7 @@ const MinifyPlugin = require('babel-minify-webpack-plugin');
 module.exports = {
     entry: {
         'management/login': './src/management/login.js',
-        'management/console': './src/management/console.js'
+        'management/console': './src/management/console/console.js'
     },
     output: {
         path: path.join(__dirname, '/dist'),
@@ -29,7 +29,7 @@ module.exports = {
                 include: path.join(__dirname, '/src')
             },
             { test: /\.json$/, loader: 'json-loader' },
-            { test: /\.css$/, loader: 'style-loader!css-loader', exclude: path.join(__dirname, '/node_modules') },
+            { test: /\.css$/, loader: 'style-loader!css-loader' /* exclude: path.join(__dirname, '/node_modules') */},
             { test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader'/*, exclude: path.join(__dirname, '/node_modules') */},
             { test: /\.woff(\d+)?$/, loader: 'url?prefix=font/&limit=5000&mimetype=application/font-woff' },
             { test: /\.ttf$/, loader: 'file?prefix=font/' },

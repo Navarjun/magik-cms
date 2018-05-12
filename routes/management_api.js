@@ -26,6 +26,7 @@ router.get('/user/profile', function (req, res) {
         });
 });
 
+// GET LIST OF THINGS
 router.get('/:type', function (req, res) {
     const type = req.params.type;
     switch (type) {
@@ -97,21 +98,99 @@ router.get('/:type', function (req, res) {
             });
         break;
     default:
-        res.send({message: 'Working on it'});
+        res.status(400).send({ message: 'There is no entity ' + type });
+    }
+});
+
+// GET SPECIFIC ITEM BY ID
+router.get('/:type/:id', function (req, res) {
+    const type = req.params.type;
+    const id = req.params.id;
+    switch (type) {
+    case 'blog':
+        Model.blog.findForUser(req.session.user)
+            .then(function (blogs) {
+                res.status(200).send({ message: 'success', data: blogs });
+            }).catch(function (err) {
+                err.code
+                    ? res.status(err.code)
+                    : res.status(500);
+                res.send({message: err.message});
+            });
+        break;
+    case 'post':
+        if (req.query.blogId) {
+            if (req.session.user.canAccessBlogs.contains(req.query.blogId)) {
+                Model.post.findByBlogId(req.query.blogId, req.query.limit || 10, req.query.skip || 0)
+                    .then(function (posts) {
+                        res.status(200).send(posts);
+                    }).catch(function (err) {
+                        res.status(err.code || 500).send({message: err.message || 'Server error'});
+                    });
+            } else {
+                res.send(401).send({message: 'You don\'t have access to this blog'});
+            }
+        } else {
+            res.status(400).send({message: 'BlogId required to fetch blog posts'});
+        }
+        break;
+    case 'navigation':
+        Model.navigation.get()
+            .then(function (navigations) {
+                res.status(200).send({navItems: navigations});
+            })
+            .catch(function (err) {
+                res.status(err.code || 500).send({message: err.message || 'Server error'});
+            });
+        break;
+    case 'page':
+        Model.page
+            .findById(id).exec()
+            .then(function (page) {
+                res.status(200).send({page: page});
+            })
+            .catch(function (err) {
+                res.status(err.code || 500).send({message: err.message || 'Server error'});
+            });
+        break;
+    case 'container':
+        Model.container.get()
+            .then(function (containers) {
+                res.status(200).send({containers: containers});
+            })
+            .catch(function (err) {
+                res.status(500).send({message: err.message});
+            });
+        break;
+    case 'user':
+        if (!req.session.user.canAccessUsers) {
+            res.status(401).send({message: 'You are unauthorised to access users'});
+            return;
+        }
+        Model.user.getAll()
+            .then(function (users) {
+                res.status(200).send({users: users});
+            })
+            .catch(function (err) {
+                res.status(err.code || 500).send({message: err.message || 'Server error'});
+            });
+        break;
+    default:
+        res.status(400).send({ message: 'There is no entity ' + type });
     }
 });
 
 // FOR UPDATING THINGS
 router.post('/:type', function (req, res) {
-    const type = req.body.type;
-    const object = req.body.object;
+    const type = req.params.type;
+    const object = req.body;
     switch (type) {
     case 'blog':
         if (!req.session.user.canAccessBlogs.contains(object._id)) {
             res.status(401).send({message: 'Unauthorised access'});
         }
         if (object.title) {
-            object.uri = slugify(object.title, {lowercase: true});
+            object.uri = slugify(object.title, {lower: true});
         }
         Model.blog.update(object)
             .then(function (blog) {
@@ -194,11 +273,11 @@ router.post('/:type', function (req, res) {
 router.put('/:type', function (req, res, next) {
     const type = req.params.type;
     const object = req.body;
-
+    console.log(type, object);
     switch (type) {
     case 'blog':
         if (object.title && object.title !== '') {
-            object.uri = slugify(object.title, {lowercase: true});
+            object.uri = slugify(object.title, {lower: true});
             Model.blog.create(object)
                 .then(function (x) {
                     Model.user.update({_id: req.session.user._id, canAccessBlogs: req.session.user.canAccessBlogs.concat([x._id])})
@@ -277,13 +356,11 @@ router.put('/:type', function (req, res, next) {
     default:
         res.status(400).send({ message: 'There is no entity ' + type });
     }
-
-    next();
 });
 
 // delete things
 router.delete('/:type', function (req, res) {
-    const type = req.body.type;
+    const type = req.params.type;
     const id = req.body.id;
 
     switch (type) {
@@ -337,7 +414,7 @@ router.delete('/:type', function (req, res) {
         break;
     case 'page':
         Model.page.delete(id)
-            .then(function (res) {
+            .then(function (x) {
                 res.status(200).send({message: 'success'});
             }).catch(function (err) {
                 res.status(err.code || 500).send({message: err.message || 'Server error'});
@@ -363,6 +440,8 @@ router.delete('/:type', function (req, res) {
                 res.status(err.code || 500).send({message: err.message || 'Server error'});
             });
         break;
+    default:
+        res.status(400).send({ message: 'There is no entity ' + type });
     }
 });
 

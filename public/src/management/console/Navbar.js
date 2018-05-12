@@ -32,18 +32,13 @@ export class Navbar extends React.Component {
             </li>;
         });
         return (
-            <div className='navbar navbar-expand-lg navbar-dark bg-dark'>
-                <Link className='navbar-brand' to='/'>Magik CMS</Link>
-                <button className='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation'>
-                    <span className='navbar-toggler-icon'></span>
-                </button>
-
-                <div className='collapse navbar-collapse' id='navbarSupportedContent'>
-                    <ul className='navbar-nav mr-auto'>
+            <nav className="col-md-2 d-none d-md-block bg-light magik-sidebar">
+                <div className="magik-sidebar-sticky">
+                    <ul className="nav flex-column">
                         {navItems}
                     </ul>
                 </div>
-            </div>
+            </nav>
         );
     }
 }

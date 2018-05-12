@@ -37,7 +37,7 @@ Post.findByBlogId = function (blogId, limit = 10, skip = 0) {
 };
 
 Post.create = function (post) {
-    post.uri = slugify(post.title, {lowercase: true, remove: /[$*_+~.()'"!\-:@]/g});
+    post.uri = slugify(post.title, {lower: true, remove: /[$*_+~.()'"!\-:@]/g});
     post.updatedDate = new Date();
     return new Post(post).save();
 };
