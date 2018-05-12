@@ -4,7 +4,8 @@
         "indent": ["error", 4],
         "semi": [1, "always"],
         "no-unused-vars": [1, "all"],
-        "react/prop-types": [0, {"skipUndeclared": false}]
+        "react/prop-types": [0, {"skipUndeclared": false}],
+        "no-lone-blocks": [0]
     },
     "plugins": ["react"]
 }
