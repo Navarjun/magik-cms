@@ -42,7 +42,7 @@ Page.delete = function (id) {
 };
 
 Page.findByUri = function (uri, fields = 'title uri published createdAt updatedAt content') {
-    return Page.findOne({uri: uri}).exec();
+    return Page.findOne({uri: uri, published: true}).exec();
 };
 
 module.exports = Page;

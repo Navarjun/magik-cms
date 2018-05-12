@@ -25,7 +25,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', publicUI);
 app.use('/users', usersRouter);
 
 // Use sessions with management interface
@@ -36,6 +35,7 @@ app.use(session({
 }));
 app.use('/admin/api', managementAPI);
 app.use('/admin', managementRouter);
+app.use('/', publicUI);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
