@@ -30,12 +30,27 @@ Blog.findByUri = function (uri) {
 };
 
 Blog.create = function (blog) {
+    if (blog['tags[]']) {
+        if (Array.isArray(blog['tags[]'])) {
+            blog.tags = blog['tags[]'];
+        } else {
+            blog.tags = [blog['tags[]']];
+        }
+    }
     return new Blog(blog).save();
 };
 
 Blog.update = function (blog) {
     return new Promise(function (resolve, reject) {
+        if (blog['tags[]']) {
+            if (Array.isArray(blog['tags[]'])) {
+                blog.tags = blog['tags[]'];
+            } else {
+                blog.tags = [blog['tags[]']];
+            }
+        }
         Blog.findByIdAndUpdate(blog._id, blog)
+            .setOptions({new: true})
             .then(function (blog) {
                 if (blog) {
                     resolve(blog);

@@ -148,6 +148,7 @@ User.get = function (id, fields = 'name email username isSuperAdmin canAccessUse
 User.update = function (user) {
     return new Promise(function (resolve, reject) {
         User.findByIdAndUpdate(user._id, user)
+            .setOptions({new: true})
             .then(function (user) {
                 if (user) {
                     resolve(user);

@@ -33,7 +33,7 @@ router.get('/:type', function (req, res) {
     case 'blog':
         Model.blog.findForUser(req.session.user)
             .then(function (blogs) {
-                res.status(200).send({ message: 'success', data: blogs });
+                res.status(200).send({ blogs: blogs });
             }).catch(function (err) {
                 err.code
                     ? res.status(err.code)
@@ -186,8 +186,9 @@ router.post('/:type', function (req, res) {
     const object = req.body;
     switch (type) {
     case 'blog':
-        if (!req.session.user.canAccessBlogs.contains(object._id)) {
+        if (req.session.user.canAccessBlogs.indexOf(object._id) === -1) {
             res.status(401).send({message: 'Unauthorised access'});
+            return;
         }
         if (object.title) {
             object.uri = slugify(object.title, {lower: true});
@@ -283,7 +284,8 @@ router.put('/:type', function (req, res, next) {
                     Model.user.update({_id: req.session.user._id, canAccessBlogs: req.session.user.canAccessBlogs.concat([x._id])})
                         .then(function (user) {
                             req.session.user = user;
-                            res.status(200).send({ message: 'success', data: {blog: x} });
+                            console.log(user);
+                            res.status(200).send({blog: x});
                         }).catch(function (err) {
                             res.status(err.code || 500).send({message: err.message || 'Server error'});
                         });
@@ -365,7 +367,7 @@ router.delete('/:type', function (req, res) {
 
     switch (type) {
     case 'blog':
-        if (req.session.user.canAccessBlogs.contains(id)) {
+        if (req.session.user.canAccessBlogs.indexOf(id) !== -1) {
             Model.blog.delete(id)
                 .then(function (x) {
                     Model.user.delete(id)

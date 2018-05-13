@@ -9,7 +9,7 @@ import '../styles/dashboard.scss';
 import {Topbar} from './Topbar';
 import {Navbar} from './Navbar';
 import {Navigation} from './Navigation';
-import {Blogs} from './Blogs';
+import {Blogs} from './Blogs/Blogs';
 import {Pages} from './Pages/Pages';
 import {PageEditor} from './Pages/PageEditor';
 
