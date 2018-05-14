@@ -4,23 +4,23 @@ const MagikError = require('../helpers/MagikError');
 const slugify = require('slugify');
 
 const postSchema = new Schema({
-    title: String,
-    uri: String,
-    published: Boolean,
-    draft: Boolean,
-    updated: Date,
-    publishedDate: Date,
-    description: String,
-    tags: [String],
+    title: { type: String, required: true },
+    uri: { type: String, required: true },
+    published: { type: Boolean, default: false },
+    publishedDate: { type: Date, default: function () { return this.published ? Date.now() : null; } },
+    description: { type: String, default: '' },
+    tags: { type: [String], default: [] },
     blogId: {
         type: Schema.Types.ObjectId,
-        ref: 'Blog'
+        ref: 'Blog',
+        required: true
     },
     authorId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    }
+    },
+    content: String
 }, {timestamps: true});
 
 const Post = mongoose.model('Post', postSchema);
@@ -30,19 +30,32 @@ Post.getById = function (id) {
 };
 
 Post.findByBlogId = function (blogId, limit = 10, skip = 0) {
-    return Post.find({blog: blogId})
+    return Post.find({blogId: blogId})
         .limit(limit)
         .skip(skip)
         .exec();
 };
 
-Post.create = function (post) {
-    post.uri = slugify(post.title, {lower: true, remove: /[$*_+~.()'"!\-:@]/g});
-    post.updatedDate = new Date();
-    return new Post(post).save();
+Post.create = function (object) {
+    object.uri = slugify(object.title, {lower: true, remove: /[$*_+~.()'"!\-:@]/g});
+    if (object['tags[]']) {
+        if (Array.isArray(object['tags[]'])) {
+            object.tags = object['tags[]'];
+        } else {
+            object.tags = [object['tags[]']];
+        }
+    }
+    return new Post(object).save();
 };
 Post.update = function (post) {
     return new Promise(function (resolve, reject) {
+        if (post['tags[]']) {
+            if (Array.isArray(post['tags[]'])) {
+                post.tags = post['tags[]'];
+            } else {
+                post.tags = [post['tags[]']];
+            }
+        }
         Post.findByIdAndUpdate(post._id, post)
             .then(function (post) {
                 if (post) {

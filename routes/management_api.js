@@ -43,7 +43,7 @@ router.get('/:type', function (req, res) {
         break;
     case 'post':
         if (req.query.blogId) {
-            if (req.session.user.canAccessBlogs.contains(req.query.blogId)) {
+            if (req.session.user.canAccessBlogs.indexOf(req.query.blogId) !== -1) {
                 Model.post.findByBlogId(req.query.blogId, req.query.limit || 10, req.query.skip || 0)
                     .then(function (posts) {
                         res.status(200).send(posts);
@@ -106,6 +106,7 @@ router.get('/:type', function (req, res) {
 router.get('/:type/:id', function (req, res) {
     const type = req.params.type;
     const id = req.params.id;
+
     switch (type) {
     case 'blog':
         Model.blog.findForUser(req.session.user)
@@ -119,20 +120,17 @@ router.get('/:type/:id', function (req, res) {
             });
         break;
     case 'post':
-        if (req.query.blogId) {
-            if (req.session.user.canAccessBlogs.contains(req.query.blogId)) {
-                Model.post.findByBlogId(req.query.blogId, req.query.limit || 10, req.query.skip || 0)
-                    .then(function (posts) {
-                        res.status(200).send(posts);
-                    }).catch(function (err) {
-                        res.status(err.code || 500).send({message: err.message || 'Server error'});
-                    });
-            } else {
-                res.send(401).send({message: 'You don\'t have access to this blog'});
-            }
-        } else {
-            res.status(400).send({message: 'BlogId required to fetch blog posts'});
-        }
+        Model.post.getById(id)
+            .then(function (post) {
+                if (req.session.user.canAccessBlogs.filter(d => { return post.blogId.equals(d); }).length !== 0 || post.authorId.equals(req.session.user._id)) {
+                    res.status(200).send({post: post});
+                } else {
+                    res.status(401).send({message: 'You don\'t have access to this blog post'});
+                }
+            })
+            .catch(function (err) {
+                res.status(err.code || 500).send({message: err.message || 'Server error'});
+            });
         break;
     case 'navigation':
         Model.navigation.get()
@@ -201,29 +199,39 @@ router.post('/:type', function (req, res) {
             });
         break;
     case 'post':
-        if (object.blogId) {
-            if (!req.session.user.canAccessBlogs.contains(object.blogId)) {
-                res.status(401).send({message: 'Unauthorised access'});
-            }
-        } else {
-            Model.post.findById(object._id)
-                .then(function (post) {
-                    if (!post) {
-                        res.status(404).send({message: 'Post id you are requesting doesn\'t exist'});
-                    }
-                    if (!req.session.user.canAccessBlogs.contains(post.blogId)) {
-                        Model.post.update(object)
+        Model.post.getById(req.body._id)
+            .then(function (post) {
+                if (post) {
+                    if (req.session.user.canAccessBlogs.filter(d => { return post.blogId.equals(d); }).length === 0) {
+                        res.status(401).send({message: 'Unauthorised access'});
+                    } else {
+                        Model.post.findById(object._id)
                             .then(function (post) {
-                                res.status(200).send({post: post});
-                            }).catch(function (err) {
-                                res.send(500).send({message: err.message});
+                                if (!post) {
+                                    res.status(404).send({message: 'Post id you are requesting doesn\'t exist'});
+                                }
+                                if (req.session.user.canAccessBlogs.filter(d => { return post.blogId.equals(d); }).length === 0 && (req.session.user._id + '' !== '' + post.authorId)) {
+                                    res.status(401).send({message: 'Unauthorised request: current user doesn\'t have access to this post'});
+                                } else {
+                                    Model.post.update(object)
+                                        .then(function (post) {
+                                            res.status(200).send({post: post});
+                                        }).catch(function (err) {
+                                            res.send(500).send({message: err.message});
+                                        });
+                                }
+                            })
+                            .catch(function (err) {
+                                res.status(err.code || 500).send({message: err.message || 'Server error'});
                             });
                     }
-                })
-                .catch(function (err) {
-                    res.status(err.code || 500).send({message: err.message || 'Server error'});
-                });
-        }
+                } else {
+                    res.status(404).send({message: 'Post id you requested wasn\'t found'});
+                }
+            })
+            .catch(function (err) {
+                res.status(err.code || 500).send({message: err.message || 'Server Error'});
+            });
         break;
     case 'navigation':
         Model.navigation.update(object)
@@ -274,7 +282,7 @@ router.post('/:type', function (req, res) {
 router.put('/:type', function (req, res, next) {
     const type = req.params.type;
     const object = req.body;
-    console.log(type, object);
+
     switch (type) {
     case 'blog':
         if (object.title && object.title !== '') {
@@ -298,11 +306,11 @@ router.put('/:type', function (req, res, next) {
         }
         break;
     case 'post':
-        if (!object.title || object.blogId) {
+        if (!object.title || !object.blogId) {
             res.status(400).send({message: 'title and blog are must to create a post'});
             return;
         }
-        if (!req.session.user.canAccessBlogs.contains(object.blogId)) {
+        if (req.session.user.canAccessBlogs.indexOf(object.blogId) === -1) {
             res.send(401).send({message: 'Unauthorised request'});
             return;
         }
@@ -391,7 +399,7 @@ router.delete('/:type', function (req, res) {
                     res.status(404).send({message: 'Post id you are requesting doesn\'t exist'});
                     return;
                 }
-                if (!req.session.user.canAccessBlogs.contains(post.blogId) || post.authorId === req.session.user._id) {
+                if (req.session.user.canAccessBlogs.filter(d => { return post.blogId.equals(d); }).length !== 0 || '' + post.authorId === '' + req.session.user._id) {
                     Model.post.delete(id)
                         .then(function () {
                             res.status(200).send({message: 'success'});
