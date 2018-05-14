@@ -22,6 +22,8 @@ const userSchema = new Schema({
 }, {timestamps: true});
 const User = mongoose.model('User', userSchema);
 
+User._update = User.update;
+
 User.initialSetup = function () {
     return new Promise(function (resolve, reject) {
         User.find().count().exec()
@@ -163,6 +165,14 @@ User.update = function (user) {
 
 User.delete = function (id) {
     return User.findByIdAndRemove(id)
+        .exec();
+};
+
+User.deleteBlog = function (blogId) {
+    return User._update(
+        { canAccessBlogs: blogId },
+        { $pull: { canAccessBlogs: blogId } })
+        .setOptions({ multi: true })
         .exec();
 };
 

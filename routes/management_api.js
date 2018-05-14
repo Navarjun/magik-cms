@@ -370,9 +370,9 @@ router.delete('/:type', function (req, res) {
         if (req.session.user.canAccessBlogs.indexOf(id) !== -1) {
             Model.blog.delete(id)
                 .then(function (x) {
-                    Model.user.delete(id)
-                        .then(function () {
-                            res.status(200).send({message: 'success'});
+                    Model.user.deleteBlog(id)
+                        .then(function (x) {
+                            res.status(200).send({ message: x });
                         }).catch(function (err) {
                             res.status(err.code || 500).send({ message: err.message || 'Server error' });
                         });
