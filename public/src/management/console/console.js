@@ -8,13 +8,13 @@ import '../styles/dashboard.scss';
 
 import {Topbar} from './Topbar';
 import {Navbar} from './Navbar';
-import {Navigation} from './Navigation';
 import {Blogs} from './Blogs/Blogs';
 import {Posts} from './Posts/Posts';
 import {PostEditor} from './Posts/PostEditor';
 import {Pages} from './Pages/Pages';
 import {Containers} from './Containers/Containers';
 import {PageEditor} from './Pages/PageEditor';
+import {Navigation} from './Navigation/Navigation';
 
 function renderPage (isSuperAdmin = false, canAccessUsers = false, canAccessBlogs = []) {
     ReactDOM.render(<BrowserRouter basename='/admin'>

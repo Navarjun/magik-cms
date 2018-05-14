@@ -12,6 +12,29 @@ router.use(function (req, res, next) {
     next();
 });
 
+// GET NAV OPTIONS
+router.get('/navOptions', function (req, res) {
+    Model.page.find({published: true})
+        .select('_id title published')
+        .exec()
+        .then(function (pages) {
+            Model.blog.find({published: true})
+                .select('_id title published')
+                .exec()
+                .then(function (blogs) {
+                    Model.container.find({})
+                        .select('_id title published')
+                        .exec()
+                        .then(function (containers) {
+                            res.status(200).send({ pages: pages, blogs: blogs, containers: containers });
+                        });
+                });
+        })
+        .catch(function (err) {
+            res.status(err.code || 500).send({ message: err.message || 'Server error' });
+        });
+});
+
 // GET user's own profile
 router.get('/user/profile', function (req, res) {
     Model.user.get(req.session.user._id)
@@ -60,7 +83,7 @@ router.get('/:type', function (req, res) {
     case 'navigation':
         Model.navigation.get()
             .then(function (navigations) {
-                res.status(200).send({navItems: navigations});
+                res.status(200).send({navigations: navigations});
             })
             .catch(function (err) {
                 res.status(err.code || 500).send({message: err.message || 'Server error'});
@@ -135,7 +158,7 @@ router.get('/:type/:id', function (req, res) {
     case 'navigation':
         Model.navigation.get()
             .then(function (navigations) {
-                res.status(200).send({navItems: navigations});
+                res.status(200).send({navigations: navigations});
             })
             .catch(function (err) {
                 res.status(err.code || 500).send({message: err.message || 'Server error'});
@@ -279,7 +302,7 @@ router.post('/:type', function (req, res) {
 });
 
 // INSERT NEW ITEMS
-router.put('/:type', function (req, res, next) {
+router.put('/:type', function (req, res) {
     const type = req.params.type;
     const object = req.body;
 
@@ -416,7 +439,7 @@ router.delete('/:type', function (req, res) {
         break;
     case 'navigation':
         Model.navigation.delete(id)
-            .then(function (res) {
+            .then(function (x) {
                 res.status(200).send({message: 'success'});
             }).catch(function (err) {
                 res.status(err.code || 500).send({message: err.message || 'Server error'});
