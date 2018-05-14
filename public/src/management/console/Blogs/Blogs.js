@@ -2,7 +2,7 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import _ from 'lodash';
-// import TagsInput from 'react-tags-input';
+
 import Tags from 'react-tagging-input';
 import '../../../../node_modules/react-tagging-input/src/component/scss/styles.scss';
 
@@ -230,9 +230,7 @@ export class Blogs extends React.Component {
 
     onTagRemoved (tag, index) {
         const blog = this.state.creatingNew ? _.cloneDeep(this.state.creatingNew) : _.cloneDeep(this.state.editingBlog);
-        console.log(blog.tags);
         blog.tags = blog.tags.filter((tag, i) => i !== index);
-        console.log(blog.tags);
         this.setState(this.state.creatingNew ? {creatingNew: blog} : {editingBlog: blog});
     }
 

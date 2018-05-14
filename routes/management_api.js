@@ -424,7 +424,7 @@ router.delete('/:type', function (req, res) {
         break;
     case 'container':
         Model.container.delete(id)
-            .then(function (res) {
+            .then(function (x) {
                 res.status(200).send({message: 'success'});
             }).catch(function (err) {
                 res.status(err.code || 500).send({message: err.message || 'Server error'});

@@ -11,6 +11,7 @@ import {Navbar} from './Navbar';
 import {Navigation} from './Navigation';
 import {Blogs} from './Blogs/Blogs';
 import {Pages} from './Pages/Pages';
+import {Containers} from './Containers/Containers';
 import {PageEditor} from './Pages/PageEditor';
 
 function renderPage (isSuperAdmin = false, canAccessUsers = false, canAccessBlogs = []) {
@@ -33,6 +34,7 @@ const App = (props) => (
                         console.log(data.match);
                         return <PageEditor id={data.match.params.id}/>;
                     }}/>
+                    <Route exact path="/containers" render={() => <Containers/>}/>
                 </main>
             </div>
         </div>

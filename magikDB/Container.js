@@ -8,12 +8,19 @@ const schema = new Schema({
     uri: { type: String, required: true, unique: true },
     containerURI: { type: String, required: true },
     published: { type: Boolean, default: false },
-    tags: [String]
+    tags: { type: [String], default: [] }
 }, {timestamps: true});
 
 const Model = mongoose.model('Container', schema);
 
 Model.create = function (object) {
+    if (object['tags[]']) {
+        if (Array.isArray(object['tags[]'])) {
+            object.tags = object['tags[]'];
+        } else {
+            object.tags = [object['tags[]']];
+        }
+    }
     object.uri = slugify(object.title, {lower: true});
     return new Model(object).save();
 };
@@ -24,6 +31,13 @@ Model.get = function () {
 
 Model.update = function (container) {
     return new Promise(function (resolve, reject) {
+        if (container['tags[]']) {
+            if (Array.isArray(container['tags[]'])) {
+                container.tags = container['tags[]'];
+            } else {
+                container.tags = [container['tags[]']];
+            }
+        }
         Model.findByIdAndUpdate(container._id, container)
             .then(function (container) {
                 if (container) {
